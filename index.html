@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wulier-arch</title>
+    <meta name="description" content="wulier-arch 的个人主页。零依赖神经网络框架 axon 与 Canvas 小游戏 interstellar-courier 的作者，关注把底层原理写清楚并证明它是对的。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:title" content="wulier-arch">
+    <meta property="og:description" content="零依赖神经网络框架 axon 的作者。与其调用黑盒，不如自己写一遍。">
+    <meta property="og:url" content="https://wulier-arch.github.io/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><text x='16' y='23' font-size='18' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle'>w</text></svg>">
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0b12;
+        --bg2: #10101c;
+        --panel: #13131f;
+        --line: #ffffff12;
+        --ink: #f7f3ff;
+        --muted: #a9a2c2;
+        --dim: #6d6785;
+        --purple: #7c5cff;
+        --lav: #b9a2ff;
+        --teal: #4ad6c8;
+        --gold: #ffd479;
+        font-family: ui-sans-serif, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body { line-height: 1.75; -webkit-font-smoothing: antialiased; }
+
+      a { color: var(--lav); text-decoration: none; }
+      a:hover { color: #d3c4ff; }
+
+      .wrap { max-width: 900px; margin: 0 auto; padding: 0 22px; }
+
+      /* ---------------- 顶栏 ---------------- */
+      nav {
+        position: sticky; top: 0; z-index: 20;
+        backdrop-filter: blur(14px);
+        background: #0b0b12cc;
+        border-bottom: 1px solid var(--line);
+      }
+      nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+      nav .brand { font-weight: 700; letter-spacing: -.01em; color: var(--ink); font-size: 15px; }
+      nav .brand i { color: var(--purple); font-style: normal; }
+      nav .links { display: flex; gap: 20px; font-size: 13.5px; }
+      nav .links a { color: var(--muted); }
+      nav .links a:hover { color: var(--ink); }
+      @media (max-width: 560px) { nav .links { gap: 14px; font-size: 13px; } }
+
+      /* ---------------- 首屏 ---------------- */
+      .hero {
+        position: relative; overflow: hidden;
+        padding: 84px 0 66px;
+        background:
+          radial-gradient(760px 340px at 18% -12%, #7c5cff26, transparent 62%),
+          radial-gradient(620px 300px at 88% 4%, #4ad6c81c, transparent 60%);
+      }
+      .hero .eyebrow {
+        display: inline-block; font-size: 12.5px; font-weight: 650; letter-spacing: .04em;
+        color: var(--lav); border: 1px solid #7c5cff44; background: #7c5cff14;
+        padding: 4px 12px; border-radius: 999px; margin-bottom: 22px;
+      }
+      .hero h1 {
+        font-size: clamp(34px, 7.5vw, 52px); font-weight: 800; letter-spacing: -.035em;
+        line-height: 1.12;
+      }
+      .hero h1 em { font-style: normal; color: var(--lav); }
+      .hero .lede {
+        margin-top: 18px; max-width: 620px;
+        color: var(--muted); font-size: clamp(15px, 2.3vw, 17px);
+      }
+      .hero .lede b { color: var(--ink); font-weight: 650; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 650;
+        border: 1px solid var(--line); background: #ffffff0d; color: var(--ink);
+        transition: background .15s ease, border-color .15s ease, transform .15s ease;
+      }
+      .btn:hover { background: #ffffff1a; border-color: #ffffff2e; color: var(--ink); transform: translateY(-1px); }
+      .btn.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+      .btn.primary:hover { background: #8d70ff; border-color: #8d70ff; }
+
+      /* ---------------- 区块 ---------------- */
+      section { padding: 62px 0; border-top: 1px solid var(--line); }
+      h2 { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 22px; }
+      p { color: var(--muted); font-size: 15px; }
+      p + p { margin-top: 13px; }
+      strong { color: var(--ink); font-weight: 650; }
+      code {
+        background: #ffffff0d; border: 1px solid var(--line); border-radius: 5px;
+        padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+      }
+
+      /* ---------------- 项目 ---------------- */
+      .project {
+        background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+        padding: 26px 28px; transition: border-color .18s ease;
+      }
+      .project + .project { margin-top: 16px; }
+      .project:hover { border-color: #7c5cff4d; }
+      .project.featured { border-color: #7c5cff3d; background: linear-gradient(180deg, #7c5cff0f, transparent 42%), var(--panel); }
+      .project header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+      .project h3 { font-size: 19px; font-weight: 700; letter-spacing: -.015em; color: var(--ink); }
+      .project h3 a { color: inherit; }
+      .project h3 a:hover { color: var(--lav); }
+      .project .tag {
+        font-size: 11.5px; font-weight: 650; color: var(--teal);
+        border: 1px solid #4ad6c83d; background: #4ad6c814; padding: 2px 9px; border-radius: 999px;
+      }
+      .project .tag.alt { color: var(--gold); border-color: #ffd4793d; background: #ffd47914; }
+      .project > p { font-size: 14.5px; }
+
+      .stats {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        gap: 1px; background: var(--line); border: 1px solid var(--line);
+        border-radius: 11px; overflow: hidden; margin: 18px 0 4px;
+      }
+      .stats div { background: var(--panel); padding: 13px 12px; text-align: center; }
+      .stats b { display: block; font-size: 19px; font-weight: 750; color: var(--ink); letter-spacing: -.02em; }
+      .stats span { font-size: 11.5px; color: var(--dim); }
+
+      .project .links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; font-size: 13.5px; font-weight: 600; }
+      .project .links a::after { content: " ↗"; color: var(--dim); font-weight: 400; }
+
+      .quote {
+        margin-top: 18px; padding: 13px 16px; border-left: 2px solid var(--purple);
+        background: #ffffff05; border-radius: 0 10px 10px 0; font-size: 13.5px; color: var(--muted);
+      }
+      .quote b { color: var(--ink); }
+
+      /* ---------------- 技术栈 ---------------- */
+      .chips { display: flex; flex-wrap: wrap; gap: 9px; }
+      .chip {
+        font-size: 13px; font-weight: 600; color: var(--muted);
+        border: 1px solid var(--line); background: #ffffff08;
+        padding: 6px 13px; border-radius: 9px;
+      }
+      .chip.hi { color: #cbbdff; border-color: #7c5cff3d; background: #7c5cff14; }
+
+      /* ---------------- 联系 ---------------- */
+      .contact { display: flex; flex-wrap: wrap; gap: 12px; }
+      .contact a {
+        display: inline-flex; align-items: center; gap: 9px;
+        border: 1px solid var(--line); background: var(--panel); border-radius: 11px;
+        padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--ink);
+        transition: border-color .15s ease, transform .15s ease;
+      }
+      .contact a:hover { border-color: #7c5cff5c; transform: translateY(-1px); color: var(--ink); }
+      .contact a span { color: var(--dim); font-weight: 400; font-size: 12.5px; }
+
+      footer {
+        border-top: 1px solid var(--line); padding: 30px 0 44px;
+        display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between;
+        color: var(--dim); font-size: 12.5px;
+      }
+      footer a { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+
+    <nav>
+      <div class="wrap">
+        <span class="brand">wulier<i>.</i>arch</span>
+        <span class="links">
+          <a href="#about">关于</a>
+          <a href="#projects">项目</a>
+          <a href="#stack">技术栈</a>
+          <a href="#contact">联系</a>
+        </span>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="wrap">
+        <span class="eyebrow">JavaScript · 零依赖</span>
+        <h1>与其调用黑盒，<br>不如<em>自己写一遍</em>。</h1>
+        <p class="lede">
+          我是 wulier-arch，<b>零依赖神经网络框架 axon</b> 的作者。<br>
+          做东西时我关注同一件事：把底层原理摊开写清楚，<b>并且证明它是对的</b>。
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="#projects">看项目</a>
+          <a class="btn" href="https://github.com/wulier-arch">GitHub</a>
+          <a class="btn" href="mailto:wulier@foxmail.com">Email</a>
+        </div>
+      </div>
+    </header>
+
+    <section id="about">
+      <div class="wrap">
+        <h2>关于</h2>
+        <p>
+          现有的 JavaScript 深度学习库基本是 TensorFlow.js / ONNX 的封装。你没法在不装依赖的前提下
+          读懂它们的反向传播，也没法在浏览器里断点进去看梯度是怎么流回去的。
+        </p>
+        <p>
+          我做的事情是另一条路：<strong>从零手写，并且把正确性摊开给你看。</strong>
+          写 axon 的过程中，有限差分梯度校验抓到过三个静默 bug——前向传播全都正确，
+          只有数值梯度能发现权重在错误地训练。这类问题跑测试发现不了，却最伤可信度。
+        </p>
+        <p>
+          同样的取向也用在工程习惯上：零依赖、零构建，克隆下来就能跑；
+          文档里的每个数字都能用仓库里的脚本复现。
+        </p>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="wrap">
+        <h2>项目</h2>
+
+        <article class="project featured">
+          <header>
+            <h3><a href="https://github.com/wulier-arch/axon">axon</a></h3>
+            <span class="tag">零依赖神经网络框架</span>
+          </header>
+          <p>
+            自动微分、张量运算、卷积、层、优化器与训练循环，全部手写。
+            同一份代码在浏览器和 Node.js 里都能跑。
+          </p>
+          <div class="stats">
+            <div><b>0</b><span>依赖</span></div>
+            <div><b>54</b><span>导出</span></div>
+            <div><b>80</b><span>测试</span></div>
+            <div><b>2.36</b><span>GFLOP/s</span></div>
+          </div>
+          <div class="quote">
+            <b>核心主张是梯度可验证：</b>每个算子都自带有限差分对照，梯度错了立刻暴露，
+            而不是「跑起来没报错就算对」。性能上比 TensorFlow.js 慢一个数量级，
+            这是刻意的取舍——换来的是每一行都能读懂。
+          </div>
+          <div class="links">
+            <a href="https://wulier-arch.github.io/axon/demo/">在线 Demo</a>
+            <a href="https://wulier-arch.github.io/axon/">站点</a>
+            <a href="https://www.npmjs.com/package/axon-net">npm</a>
+            <a href="https://github.com/wulier-arch/axon">源码</a>
+          </div>
+        </article>
+
+        <article class="project">
+          <header>
+            <h3><a href="https://github.com/wulier-arch/interstellar-courier">interstellar-courier</a></h3>
+            <span class="tag alt">星际快递员</span>
+          </header>
+          <p>
+            驾驶一艘小小的星际快递船，在流星雨中收集星星、躲避陨石。
+            零依赖、零构建，打开浏览器就能玩的 Canvas 迷你太空躲避游戏。
+          </p>
+          <div class="links">
+            <a href="https://wulier-arch.github.io/interstellar-courier/">在线试玩</a>
+            <a href="https://github.com/wulier-arch/interstellar-courier">源码</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <h2>技术栈</h2>
+        <div class="chips">
+          <span class="chip">JavaScript</span>
+          <span class="chip">Node.js</span>
+          <span class="chip">Canvas</span>
+          <span class="chip">WebAudio</span>
+          <span class="chip">GitHub Actions</span>
+          <span class="chip">GitHub Pages</span>
+          <span class="chip hi">手写自动微分</span>
+          <span class="chip hi">手写卷积</span>
+          <span class="chip hi">有限差分梯度验证</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="wrap">
+        <h2>联系</h2>
+        <div class="contact">
+          <a href="https://github.com/wulier-arch">GitHub <span>@wulier-arch</span></a>
+          <a href="mailto:wulier@foxmail.com">Email <span>wulier@foxmail.com</span></a>
+        </div>
+        <p style="margin-top:20px">
+          欢迎在任一仓库提 Issue 或 PR。如果你给 axon 实现了新算子，
+          <strong>请务必附上梯度校验用例</strong>——那是那个项目唯一的质量底线。
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between;width:100%">
+        <span>© 2026 wulier-arch</span>
+        <span>
+          <a href="https://github.com/wulier-arch/axon">axon</a> ·
+          <a href="https://github.com/wulier-arch/interstellar-courier">interstellar-courier</a> ·
+          <a href="https://github.com/wulier-arch">GitHub</a>
+        </span>
+      </div>
+    </footer>
+
+  </body>
+</html>
